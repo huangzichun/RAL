@@ -6,31 +6,32 @@ import torch.nn.functional as F
 import numpy as np
 from torch.autograd import Variable
 
-# 分类器网络
+# 分类器网络，输入word embedding（不训练），输出分类结果，一层的网络
 class Classify_Net(nn.Module):
     def __init__(self, n_dict, EMBEDDING_DIM):
         super(Classify_Net, self).__init__()
-        self.EMBEDDING_DIM = EMBEDDING_DIM
-        self.embedding = nn.Embedding(n_dict, EMBEDDING_DIM)
+        # self.EMBEDDING_DIM = EMBEDDING_DIM
+        # self.embedding = nn.Embedding(n_dict, EMBEDDING_DIM)
         self.out = nn.Linear(2 * EMBEDDING_DIM, 1)
 
     def forward(self, x):
-        emb = self.embedding(x)
-        emb = emb.view(-1, 2 * self.EMBEDDING_DIM)
-        out = self.out(emb)
-        out = F.sigmoid(out)
-        return out
+        # emb = self.embedding(x)
+        # emb = emb.view(-1, 2 * self.EMBEDDING_DIM)
+        output = self.out(x)
+        result = F.sigmoid(output)
+        return result
 
-class model():
-    def __init__(self, data, data_processer, EMBEDDING_DIM):
+class model(object):
+    def __init__(self, data, data_processer, Embedding, EMBEDDING_DIM):
         self.data_processer = data_processer
         self.net = Classify_Net(data_processer.n_dict, EMBEDDING_DIM)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr = 0.01)
         self.loss_func = nn.MSELoss() 
         self.epoch = 200  
-        self.acc = self.test()
+        self.embed = Embedding
         self.data = data
-    
+        self.acc = self.test()
+
     def train(self, ): # 使用所有有标签数据训练
         loader = self.data.train_loader(self.data_processer)
         for i in range(self.epoch):
@@ -47,14 +48,22 @@ class model():
         num = 0
         test_data_list = self.data_processer.test_data_list
         test_target_list = self.data_processer.test_target_list
-        test_data_list = Variable(torch.from_numpy(test_data_list)).type(torch.LongTensor)
-        test_target_list = Variable(torch.from_numpy(test_target_list)).type(torch.FloatTensor)
+        # test_data_list = Variable(torch.from_numpy(test_data_list)).type(torch.FloatTensor)
+        # test_target_list = Variable(torch.from_numpy(test_target_list)).type(torch.FloatTensor)
 
         for i in range(len(test_data_list)):
             num += 1
             x = test_data_list[i]
+            x1_embed = self.embed.id2embed(int(x[0]))
+            x2_embed = self.embed.id2embed(int(x[1]))
+            x_input = np.array((x1_embed + x2_embed))
+            # print(x_input)
+            x_input = Variable(torch.from_numpy(x_input)).type(torch.FloatTensor)
+            # x_input.view(1,-1)
+            
+
             y = test_target_list[i]
-            y_predict = self.net.forward(x)
+            y_predict = self.net.forward(x_input)
             
             if abs(y_predict - y) < 0.5:
                 acc_num += 1

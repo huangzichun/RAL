@@ -74,11 +74,12 @@ class DQN(object):
             # actions_value = actions_value.squeeze(-1)
             actions_value = self.Data.value_filter(actions_value) # 过滤掉已经不能再次选择的动作（直接令为0）
             action = np.argmax(actions_value)
-            print("max!")
+            # print("max!")
         else:
             action = random.sample(self.Data.unlabeled_data_set, 1)
             action = action[0]
-            print("random!")
+            # print("random!")
+        print(action)
         return action    
 
     

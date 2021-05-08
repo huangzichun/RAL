@@ -13,21 +13,27 @@ import model
 import train
 import al
 import random
+import embedding
+import warnings
+
+warnings.filterwarnings("ignore")
 
 random.seed(114514)
 # 超参
-epoch = 1000
+epoch = 1
+EMBEDDING_DIM = 50
 MEMORY_CAPACITY = 20  # 记忆存储容量
-FILENAME = 'coordpairs_wiki100.json'
-TESTFILENAME = 'coordpairs_wiki100.json'
-EMBEDDING_DIM = 128
-budget = 200
+FILENAME = 'data.json'
+TESTFILENAME = 'test.json'
+budget = 500
 
-data_input = data_processing.data_processing(FILENAME, TESTFILENAME, EMBEDDING_DIM)
-DATA = data.Data(data_input) 
-MODEL = model.model(DATA, data_input, EMBEDDING_DIM)
-AL = al.al(DATA, data_input, MODEL)
-Env = env.env(DATA, data_input, AL, MODEL)
+data_input = data_processing.data_processing(FILENAME, TESTFILENAME)
+Embedding = embedding.embed(data_input)
+DATA = data.Data(data_input, Embedding) 
+
+MODEL = model.model(DATA, data_input, Embedding, EMBEDDING_DIM)
+AL = al.al(DATA, data_input, Embedding, MODEL)
+Env = env.env(DATA, data_input, AL, Embedding, MODEL)
 
 N_STATES = len(Env.state) # state向量维数
 N_ACTIONS = Env.action_space_dim # action种类数

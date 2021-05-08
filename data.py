@@ -1,5 +1,3 @@
-# 处理数据
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,7 +6,7 @@ from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 
 class Data():
-    def __init__(self, data_input):
+    def __init__(self, data_input, embed):
         self.n_word = data_input.n_word
         self.labeled_data_list =  np.empty((self.n_word, 2)) # 存放有标签数据
         self.labeled_target_list = np.empty(self.n_word)
@@ -16,21 +14,22 @@ class Data():
         self.labeled_num = 0
         self.unlabeled_data_set = set(range(self.n_word))
         self.data_input = data_input
+        self.embed = embed
 
     def train_loader(self, data_input): # 返回所有带标签数据
-        data_list = np.empty((self.labeled_num, 2))
+        data_list = []
         target_list = np.empty(self.labeled_num)
         # print(self.labeled_num)
         for i in range(self.labeled_num):
-            #cprint(self.labeled_data_list)
-            target_list[i] = int(self.labeled_target_list[i])
-            # print(target_list)
-
+            target_list[i] = self.labeled_target_list[i]
+            data_add = []
             for j in range(2):
-                #print(self.labeled_data_list[i][j])
-                data_list[i][j] = int(self.labeled_data_list[i][j])
-
-        data_list = Variable(torch.from_numpy(data_list)).type(torch.LongTensor)
+                data_add = data_add + self.embed.id2embed(self.labeled_data_list[i][j])
+            #data_list.append([])
+            data_list.append(data_add)
+        
+        data_list = np.array(data_list)
+        data_list = Variable(torch.from_numpy(data_list)).type(torch.FloatTensor)
         x = data_list
         y = Variable(torch.from_numpy(target_list)).type(torch.FloatTensor)
         train_data = TensorDataset(x, y)
@@ -54,4 +53,3 @@ class Data():
             if self.labeled_record[i] > 0:
                 actions_value[i] = 0
         return actions_value
-    
