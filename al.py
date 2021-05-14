@@ -2,7 +2,10 @@
 
 import numpy as np 
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Variable
+import math
 
 class al(object):
     def __init__(self, data, data_input, embed, Model):
@@ -11,10 +14,11 @@ class al(object):
         self.embed = embed
         self.data_list = data_input.data_list
         self.unlabeled_data_set = data.unlabeled_data_set
-        self.n_al = 1
+
+        self.n_al = 1 # al统计量个数
         self.al_data_list = np.empty((data.n_word, self.n_al))
 
-    def al_uncertain(self, ):  # 不确信度
+    def al_uncertain(self, ):  # 模型输出，衡量不确信度
         length = len(self.data_list)
         new_data_list = []
         for i in range(length):
@@ -26,18 +30,18 @@ class al(object):
         al_uncertain = self.Model.net.forward(new_data_list).detach().numpy()
         # print(al_uncertain)
         return(al_uncertain)
-    
-    def update(self, ):
-        al_uncertain = self.al_uncertain()
-        for i in range(self.data.n_word):
-            if i in self.unlabeled_data_set:
-                self.al_data_list[i] = 0
-            else:
-                self.al_data_list[i] = al_uncertain[i]
-        return self.al_data_list
-
 
     # def al_gradient_change(self, ):  # 梯度变化
 
     # def al_loss_net(self, ): # loss网络
 
+    def update(self, ):  # 更新AL统计量
+        # 更新不确信度
+        al_uncertain = self.al_uncertain()
+        for i in range(self.data.n_word):
+            if i in self.unlabeled_data_set:
+                self.al_data_list[i] = abs(al_uncertain[i][0] - al_uncertain[i][1]) #这里采用的是margin
+            else:
+                self.al_data_list[i] = 0
+
+        return self.al_data_list
