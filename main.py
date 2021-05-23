@@ -16,6 +16,7 @@ import random
 import embedding
 import test
 import warnings
+from raw.agent2 import agent2
 
 warnings.filterwarnings("ignore")
 
@@ -39,6 +40,8 @@ Env = env.env(DATA, data_input, AL, Embedding, MODEL)
 N_STATES = len(Env.state) 
 N_ACTIONS = Env.action_space_dim 
 Agent = agent.DQN(DATA, N_STATES, N_ACTIONS)
+# action space={human, model}
+Agent2 = agent2(DATA, N_STATES, N_ACTIONS=2)
 
-train.train(MODEL, DATA, Agent, AL, epoch, Env, budget, MEMORY_CAPACITY)
+train.train(MODEL, DATA, Agent, AL, epoch, Env, budget, MEMORY_CAPACITY, Agent2)
 # test.test(MODEL, DATA, Agent, AL, epoch, Env, budget)
