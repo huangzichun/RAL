@@ -18,6 +18,7 @@ class Data():
         self.labeled_target_list = np.empty(self.n_word) 
         self.labeled_record = np.empty(self.n_word)
         self.labeled_num = 0
+        self.labeled_num_by_human = 0
         self.unlabeled_data_set = set(range(self.n_word))
 
     def train_loader(self, data_input): # 返回所有带标签数据的embed
@@ -40,9 +41,11 @@ class Data():
 
         return loader 
         
-    def choose_and_update(self, action): # 根据agent action返回值去选择对应数据,并更新数据
+    def choose_and_update(self, action, queried_by_who_action): # 根据agent action返回值去选择对应数据,并更新数据
         input_data, input_target = self.data_input.data_list[action], self.data_input.target_list[action]
-        
+        if queried_by_who_action == 1:
+            self.labeled_num_by_human += 1
+
         self.labeled_record[action] = 1
         self.labeled_data_list[self.labeled_num] = input_data
         self.labeled_target_list[self.labeled_num] = input_target
@@ -68,4 +71,15 @@ class Data():
         self.labeled_target_list = np.empty(self.n_word)
         self.labeled_record = np.empty(self.n_word)
         self.labeled_num = 0
+        self.labeled_num_by_human = 0
 
+    def get_unlabeled_data(self):
+        return self.unlabeled_data_set
+
+    def get_feat_label_by_index(self, action_index):
+        input_data, input_target = self.data_input.data_list[action_index], self.data_input.target_list[action_index]
+        x1_embed = self.embed.id2embed(int(input_data[0]))
+        x2_embed = self.embed.id2embed(int(input_data[1]))
+        x_input = np.array((x1_embed + x2_embed))
+        x = Variable(torch.from_numpy(x_input)).type(torch.FloatTensor)
+        return x, input_target
