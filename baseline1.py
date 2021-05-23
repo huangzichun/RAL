@@ -24,13 +24,14 @@ class Net(nn.Module):
         output = self.out(x)
         return output
 
-FILENAME = 'A_train.json'
-TESTFILENAME = 'B_train.json'
+FILENAME = 'train_v2.json'
+TESTFILENAME = 'A_test.json'
 EMBEDDING_DIM = 20
 
 data_input = data_input.data_input(FILENAME, TESTFILENAME)
 n_dict = data_input.n_dict
 n_word = data_input.n_word
+n_word = 3003 + 512
 embed = embedding.embed(data_input)
 
 net = Net(n_dict, EMBEDDING_DIM)

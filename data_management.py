@@ -47,6 +47,7 @@ class Data():
         self.labeled_data_list[self.labeled_num] = input_data
         self.labeled_target_list[self.labeled_num] = input_target
         self.labeled_num += 1
+        # print(self.unlabeled_data_set)
         self.unlabeled_data_set.remove(action)
         
         return input_data, input_target

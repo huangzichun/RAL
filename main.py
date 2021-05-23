@@ -24,9 +24,9 @@ random.seed(114)
 epoch = 20
 EMBEDDING_DIM = 20
 MEMORY_CAPACITY = 20  # 记忆存储容量
-FILENAME = 'A_test.json'
-TESTFILENAME = 'A_train.json'
-budget = 512
+FILENAME = 'B_train.json'
+TESTFILENAME = 'B_test.json'
+budget = 1024
 
 data_input = data_input.data_input(FILENAME, TESTFILENAME)
 Embedding = embedding.embed(data_input)
@@ -41,4 +41,4 @@ N_ACTIONS = Env.action_space_dim
 Agent = agent.DQN(DATA, N_STATES, N_ACTIONS)
 
 train.train(MODEL, DATA, Agent, AL, epoch, Env, budget, MEMORY_CAPACITY)
-test.test(MODEL, DATA, Agent, AL, epoch, Env, budget)
+# test.test(MODEL, DATA, Agent, AL, epoch, Env, budget)

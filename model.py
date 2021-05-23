@@ -29,11 +29,10 @@ class model(object):
         self.net = Classify_Net(EMBEDDING_DIM)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr = 0.01)
         self.loss_func = nn.CrossEntropyLoss() 
-        self.epoch = 100
-        self.acc = self.test()
-
+        self.epoch = 200
         self.embed = Embedding
         self.data = data
+        self.acc = self.test()
         
 
     def train(self, ): # 使用所有有标签数据训练
@@ -49,8 +48,8 @@ class model(object):
                 loss.backward()
                 self.optimizer.step()
 
-            if i % 50 == 0:
-                print(i, "epoch  loss:", total_loss / self.data.labeled_num)
+            # if i % 50 == 0:
+            #     print(i, "epoch  loss:", total_loss / self.data.labeled_num)
     
     def test(self, ): # 测试模型准确率上升
         acc_num = 0

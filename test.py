@@ -25,6 +25,11 @@ def test(model, data, agent, al, epoch, env, budget):
         # baseline2采用随机
         # action = random.sample(data.unlabeled_data_set, 1)
         # action = action[0]
+
+        # baseline3采用最大不确信度
+        # actions_value = al.al_data_list
+        # actions_value = data.value_filter(actions_value)
+        # action = np.argmax(actions_value)
   
         s_next, r = env.feedback(action) 
         s = s_next 
