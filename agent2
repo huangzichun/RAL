@@ -1,0 +1,53 @@
+# 提供policy，目前采用的是DQN
+
+from raw.agent import DQN
+import random
+import numpy as np
+import torch
+
+class agent2(DQN):
+    def __init__(self, Data, N_STATES, N_ACTIONS):
+        super(agent2, self).__init__(Data, N_STATES, N_ACTIONS)
+
+    def choose_action(self, x):
+        x = x.squeeze(-1)
+        if np.random.uniform() < self.epsilon: # epsilon-greedy策略去选择动作
+            actions_value = self.eval_net.forward(x).detach().numpy()
+            action = np.argmax(actions_value)
+        else:
+            action = random.sample([0,1], 1)
+            action = action[0]
+        return action
+
+    def Learn(self):
+        # target net 参数更新,每隔 TARGET_REPLACE_ITER 更新一下
+        if self.learn_step_counter % self.TARGET_REPLACE_ITER == 0:
+            self.target_net.load_state_dict(self.eval_net.state_dict())
+        self.learn_step_counter += 1
+
+        # 抽取记忆库中的批数据
+        sample_index = np.random.choice(self.MEMORY_CAPACITY, self.BATCH_SIZE)
+        b_memory = self.memory[sample_index, :]
+
+        # 打包记忆，分开保存进b_s，b_a，b_r，b_s
+        b_s = torch.FloatTensor(b_memory[:, :self.N_STATES])
+        b_a = torch.LongTensor(b_memory[:, self.N_STATES:self.N_STATES+1].astype(int))
+        b_r = torch.FloatTensor(b_memory[:, self.N_STATES+1:self.N_STATES+2])
+        b_s_next = torch.FloatTensor(b_memory[:, -self.N_STATES:])
+
+        # 针对做过的动作b_a, 来选 q_eval 的值, (q_eval 原本有所有动作的值)
+
+        # try:
+        # print(b_a)
+        q_eval = self.eval_net(b_s).gather(1, b_a)
+
+        q_next = self.target_net(b_s_next).detach()
+        # except Exception:
+        #     print()
+        q_target = b_r + self.GAMMA * q_next.max(1)[0].view(self.BATCH_SIZE, 1)
+        loss = self.loss_func(q_eval, q_target)
+
+        # 计算, 更新 eval net
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
