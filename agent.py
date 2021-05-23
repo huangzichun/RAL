@@ -46,7 +46,7 @@ class DQN(object):
         self.TARGET_REPLACE_ITER = 10
         self.BATCH_SIZE = 32
         self.LR = 0.01
-        self.MEMORY_CAPACITY = 2000
+        self.MEMORY_CAPACITY = 20
         self.GAMMA = 0.9
 
         self.learn_step_counter = 0 # 学习步数计数器
@@ -103,9 +103,10 @@ class DQN(object):
         b_s_next = torch.FloatTensor(b_memory[:, -self.N_STATES:]) 
 
         # 针对做过的动作b_a, 来选 q_eval 的值, (q_eval 原本有所有动作的值)
+        # print(b_a)
         q_eval = self.eval_net(b_s).gather(1, b_a)  
         q_next = self.target_net(b_s_next).detach()    
-        q_target = b_r + self.GAMMA * q_next.max(1)[0]  
+        q_target = b_r + self.GAMMA * q_next.max(1)[0].view(self.BATCH_SIZE, 1)
         loss = self.loss_func(q_eval, q_target)
 
         # 计算, 更新 eval net
